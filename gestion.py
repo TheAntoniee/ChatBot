@@ -1,7 +1,3 @@
-# Gestión de cuenta y seguridad
-# Amazon Prime y suscripciones
-# Soporte técnico de dispositivos
-
 import re
 import time
 import random
@@ -13,18 +9,42 @@ class Categoria(Enum):
     SOPORTE_TECNICO = 3
     NO_RECONOCIDO = 4
 
+
+# ---------------------------
+# Expresiones de cortesía y empatía
+# ---------------------------
+saludos = [
+    "Bot: ¡Hola! Soy tu asistente virtual de Amazon. Me da mucho gusto ayudarte hoy.",
+    "Bot: ¡Hola! Bienvenido al soporte de Amazon. Estoy aquí para asistirte.",
+    "Bot: ¡Hola! Gracias por contactar al soporte de Amazon. ¿En qué puedo ayudarte?"
+]
+expresiones_empatia = [
+    "Bot: Entiendo lo frustrante que puede ser cuando {problema}.",
+    "Bot: Comprendo tu preocupación sobre {problema}, déjame ayudarte.",
+    "Bot: Lamento escuchar que estás teniendo dificultades con {problema}.",
+    "Bot: Sé lo importante que es resolver {problema}, trabajemos juntos en esto.",
+    "Bot: Lamentamos que tengas problemas para {problema}, estamos aquí para ayudarte."
+]
+confirmaciones = [
+    "Bot: Perfecto, he entendido que necesitas ayuda con {tema}.",
+    "Bot: De acuerdo, veo que tu consulta es sobre {tema}.",
+    "Bot: Entendido, me enfocaré en ayudarte con {tema}."
+]
 despedidas = [
-    "Adiós",
-    "Hasta luego",
-    "Que tenga un buen día",
-    "Nos vemos pronto",
-    "Gracias por contactar"
+    "Bot: ¡Ha sido un placer ayudarte! Que tengas un excelente día.",
+    "Bot: Gracias por confiar en Amazon. ¡Hasta pronto!",
+    "Bot: Espero haberte sido de ayuda. ¡Cuídate mucho!",
+    "Bot: No dudes en contactarnos si necesitas más ayuda. ¡Adiós!"
 ]
 
-#Expresiones regulares generales
+# ---------------------------
+# Expresiones regulares
+# ---------------------------
 email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
 telefono_regex = r'^\+?[0-9]{7,15}$'
 nombre_regex = r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$'
+tarjeta_regex = r'^\d{16}$'
+direccion_regex = r'^[\w\s\#\-\.,áéíóúÁÉÍÓÚñÑ]+$'
 
 Gestion_Cuenta_RE = re.compile(r"""
     (?ix)       
@@ -38,7 +58,7 @@ Gestion_Cuenta_RE = re.compile(r"""
         # Verificación en dos pasos
         |(?P<verificacion>(?:verificaci[óo]n|autenticaci[óo]n|2fa|doble\s+factor|c[óo]digo)\s+(?:dos\s+pasos|seguridad))
         # Cuenta bloqueada
-        |(?P<bloqueo>(?:bloque[ao]|bloqueada|suspendida)\s+cuenta|cuenta\s+(?:bloque[ao]|bloqueada|suspendida))
+        |(?P<bloqueo>(?:bloque[o]|bloqueada|suspendida)\s+cuenta|cuenta\s+(?:bloque[ao]|bloqueada|suspendida))
         # Dispositivos y sesiones
         |(?P<sesion>(?:dispositivo|sesi[óo]n)\s+(?:(?:no\s+)?reconocido|conectad[ao]|activ[ao]|abierta))
         # Alertas de seguridad
@@ -53,7 +73,6 @@ Gestion_Cuenta_RE = re.compile(r"""
         |(?P<eliminar>(?:eliminar|cerrar|borrar)\s+cuenta|cuenta\s+(?:eliminar|cerrar|borrar))
         # Problemas generales
         |(?P<problema>(?:problema|error|dificultad|duda)\s+(?:sesi[óo]n|login|acceso|cuenta))
-                              
     )\b
 """, re.VERBOSE)
 Prime_Suscripciones_RE = re.compile(r"""
@@ -73,7 +92,9 @@ Soporte_Tecnico_RE = re.compile(r"""
 no_RE = re.compile(r'^(?:no|n|no,?\s+gracias)$', re.IGNORECASE)
 si_RE = re.compile(r'^(?:s[ií]|s|claro|por\s+supuesto)$', re.IGNORECASE)
 
-# Función para clasificar la consulta
+# ---------------------------
+# Clasificación de consulta
+# ---------------------------
 def clasificar_consulta(texto):
     match = Gestion_Cuenta_RE.search(texto)
     if match:
@@ -86,27 +107,71 @@ def clasificar_consulta(texto):
         return Categoria.SOPORTE_TECNICO, match
     return Categoria.NO_RECONOCIDO, None
 
+# ---------------------------
+# Función para manejar preguntas
+# ---------------------------
+def hacer_pregunta(pregunta, intentos=3):
+    for intento in range(intentos):
+        print(f"Bot: {pregunta}")
+        respuesta = input("Usuario: ").strip().lower()
+        if si_RE.match(respuesta) or no_RE.match(respuesta):
+            return respuesta
+        if intento < intentos - 1:
+            print("Bot: No entendí tu respuesta. ¿Podrías responder nuevamente'?")
+        else:
+            print("Bot: Continuemos, asumiré que necesitas ayuda...")
+            return "no"  # Por defecto para continuar el flujo
+    return "no"
+
+# ---------------------------
+# Respuestas
+# ---------------------------
 def manejar_acceso(match_obj):
-    print("Problema de acceso")
-    texto = match_obj.group('acceso')
-    if "no puedo" in texto.lower():
-        print("¿Has verificado tu conexión a internet?")
-    elif "puede" in texto.lower():
-        print("¿La persona tiene acceso al email asociado?")
+    print("Bot: A veces, para mayor seguridad, enviamos un correo electrónico de verificación de cuenta.")
+    respuesta = hacer_pregunta("¿Has revisado tu correo electrónico para un enlace o código de verificación?")
+    if no_RE.match(respuesta):
+        hacer_pregunta("Por favor revisa tu correo, incluyendo la carpeta de spam. ¿Encontraste el correo?")
+    elif si_RE.match(respuesta):
+        hacer_pregunta("¿Pudiste completar la verificación y acceder a tu cuenta?")
+        if no_RE.match(respuesta):
+            print("Bot: Si el problema persiste, por favor contacta soporte: https://www.amazon.com/gp/help/customer/contact-us")
+            state = 0
+    return True
 
 def manejar_contrasena(match_obj):
-    print("Problema de contraseña")
-    texto = match_obj.group('contrasena')
-    if "olvid" in texto.lower():
-        print("Puedes resetear tu contraseña aquí: [link]")
-    elif "cambiar" in texto.lower():
-        print("Para cambiar contraseña: Tu Cuenta > Seguridad")
+    texto = match_obj.group('contrasena').lower()
+    
+    if "olvid" not in texto:
+        return False
+    
+    respuesta = hacer_pregunta("¿Ya intentaste visitar nuestra página de 'Restablecimiento de contraseña'?")
+    if no_RE.match(respuesta):
+        hacer_pregunta("Te recomiendo: https://www.amazon.com/-/es/ap/forgotpassword ¿Necesitas ayuda con los pasos?")
+    elif si_RE.match(respuesta):
+        respuesta = hacer_pregunta("¿Revisaste tu carpeta de spam/correo no deseado?")
+        if no_RE.match(respuesta):
+            hacer_pregunta("Por favor revisa spam. ¿Encontraste el correo?")
+        elif si_RE.match(respuesta):
+            hacer_pregunta("¿Tienes acceso al email asociado o necesitas ayuda para recuperarlo?")
+            if no_RE.match(respuesta):
+                print("Bot: Por favor contacta soporte: https://www.amazon.com/gp/help/customer/contact-us")
+                state = 0
+    return True
 
 def manejar_bloqueo(match_obj):
-    print("Problema de cuenta bloqueada")
-    print("Sigue estos pasos para desbloquear tu cuenta: [link]")
+    respuesta = hacer_pregunta("¿Recibiste alguna notificación o correo explicando el motivo del bloqueo?")
+    if si_RE.match(respuesta):
+        hacer_pregunta("¿Pudiste seguir las instrucciones para desbloquear tu cuenta?")
+        if no_RE.match(respuesta):
+            print("Bot: Por favor contacta soporte: https://www.amazon.com/gp/help/customer/contact-us")
+            state = 0
+    elif no_RE.match(respuesta):
+        hacer_pregunta("Te recomiendo visitar: https://www.amazon.com/gp/help/customer/contact-us ¿Necesitas ayuda con los pasos?")
+    return True
 
-#Manejadores
+# ---------------------------
+# Maneajadores de gestión de cuenta
+# ---------------------------
 manejadores_gestion = {
     'acceso': manejar_acceso,
     'contrasena': manejar_contrasena,
@@ -114,28 +179,14 @@ manejadores_gestion = {
     # 'verificacion': manejar_verificacion
 }
 
-# Respuestas específicas por categoría
-respuestas = {
-    Categoria.GESTION_CUENTA: [
-        "Para problemas de acceso, intenta restablecer tu contraseña aquí: [link]",
-        "Si tu cuenta está bloqueada, sigue estos pasos: [link]",
-        "Para cambiar tu correo o teléfono, ve a Tu Cuenta > Configuración",
-        "Si necesitas ayuda con la verificación en dos pasos, consulta: [link]"
-    ],
-    Categoria.PRIME_SUSCRIPCIONES: [
-
-    ],
-    Categoria.SOPORTE_TECNICO: [
-        
-    ]
-}
-
 state = 0
 salida = True
 categoria_actual = None
 match_objeto = None
 
-# Flujo de conversación
+# ---------------------------
+# Flujo chatbot
+# ---------------------------
 print("Bot: ¡Hola! Soy tu asistente virtual de Amazon. ¿En qué te puedo ayudar hoy?")
 
 while salida:
@@ -145,13 +196,11 @@ while salida:
             user_input = input("Bot: Por favor, describe tu situación:\nUsuario: ")
 
             categoria_actual, match_objeto = clasificar_consulta(user_input)
-
             if categoria_actual != Categoria.NO_RECONOCIDO:
-                print("Grupos capturados:", match_objeto.groupdict())
-                print(f"Bot: Entiendo, tienes una consulta sobre {categoria_actual.name.replace('_', ' ').title()}.")
+                print(expresiones_empatia[0].format(problema=user_input))
+
                 if categoria_actual == Categoria.GESTION_CUENTA and match_objeto:
                     grupos = match_objeto.groupdict()
-                    print("Bot: Analizando tu consulta...")
                     
                     # Ejecutar manejadores específicos para cada grupo que coincidió
                     for grupo_nombre, grupo_valor in grupos.items():
