@@ -86,9 +86,9 @@ def inicializar_csv():
         with open("suscripciones.csv", "w", newline="") as f:
             writer = csv.writer(f)
             writer.writerow(["email", "estado"])
-            writer.writerow(["usuario1@example.com", "activo"])
-            writer.writerow(["usuario2@example.com", "activo"])
-            writer.writerow(["usuario3@example.com", "cancelado"])
+            writer.writerow(["cruzalan04@gmail.com", "activo"])
+            writer.writerow(["jesusmart12@gmail.com", "activo"])
+            writer.writerow(["mariahern3@gmail.com", "cancelado"])
 
 def buscar_suscripcion(email):
     with open("suscripciones.csv", "r") as f:
