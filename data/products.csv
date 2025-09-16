@@ -1,0 +1,4 @@
+product_id,name,category,price_cents,has_sizes,stock
+1,Playera básica unisex,ropa,19900,1,
+2,Sudadera con gorro,ropa,59900,1,
+3,Cafetera goteo 12 tazas,hogar,149900,0,13

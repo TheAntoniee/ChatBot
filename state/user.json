@@ -1,0 +1,19 @@
+{
+  "user_id": 1,
+  "addresses": [
+    {
+      "id": 1,
+      "name": "Usuario Demo",
+      "phone": "5512345678",
+      "street": "Calle Falsa 123",
+      "city": "CDMX",
+      "state": "CDMX",
+      "postal_code": "06000",
+      "is_default": true
+    }
+  ],
+  "payment_methods": [],
+  "profile": {
+    "first_name": "Kari"
+  }
+}

@@ -1,0 +1,7 @@
+variant_id,product_id,size,stock
+101,1,s,12
+102,1,m,6
+103,1,l,5
+201,2,m,6
+202,2,l,4
+203,2,xl,3

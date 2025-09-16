@@ -1,0 +1,11 @@
+{
+  "items": [
+    {
+      "product_id": 1,
+      "variant_id": 101,
+      "size": "s",
+      "qty": 2,
+      "unit_price_cents": 19900
+    }
+  ]
+}
