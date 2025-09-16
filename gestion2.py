@@ -1,6 +1,5 @@
 import re
 import time
-import random
 import csv
 import os
 from enum import Enum
@@ -23,10 +22,6 @@ despedidas = [
 # Expresiones regulares
 # ---------------------------
 email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-telefono_regex = r'^\+?[0-9]{7,15}$'
-nombre_regex = r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$'
-tarjeta_regex = r'^\d{16}$'
-direccion_regex = r'^[\w\s\#\-\.,áéíóúÁÉÍÓÚñÑ]+$'
 
 Gestion_Cuenta_RE = r"""(?i)\b((no\s+)?(puedo|puede|podr[ií]a)\s+(acceder|entrar|ingresar|iniciar|acceso)|(olvid[ée]|perd[ií]|recuperar|restablecer|resetear|cambiar)\s+(contrase[ñn]a|password|clave|acceso)|(verificaci[óo]n|autenticaci[óo]n|2fa|doble\s+factor|c[óo]digo)\s+(dos\s+pasos|seguridad)|(bloqueo|bloqueada|suspendida)\s+cuenta|(cambiar|actualizar|modificar)\s+(correo|email|tel[ée]fono|n[úu]mero|direcci[óo]n)|(eliminar|cerrar|borrar)\s+cuenta|(problema|error|dificultad|duda)\s+(sesi[óo]n|login|acceso|cuenta))\b"""
 Prime_Suscripciones_RE = r"(?i)\b(prime|suscripci[óo]n|membres[ií]a|anual|mensual|gratis|prueba|renovaci[óo]n|cancelar|reactivar|beneficios|env[ií]o gratis|prime video|prime music|prime gaming|prime reading|kindle unlimited|amazon music|amazon video|amazon photos|almacenamiento ilimitado|oferta|descuento|promoci[óo]n|factura|recibo|pago|m[ée]todo de pago|d[ií]a prime|prime day|devoluci[óo]n|reembolso|garant[ií]a)\b"
@@ -46,7 +41,7 @@ def clasificar_consulta(texto):
         return Categoria.NO_RECONOCIDO
 
 # ---------------------------
-# Respuestas
+# Respuestas base
 # ---------------------------
 respuestas = {
     Categoria.GESTION_CUENTA: [
@@ -115,6 +110,54 @@ def cancelar_suscripcion(email):
             writer.writerows(filas)
     return encontrado
 
+def reactivar_suscripcion(email):
+    filas = []
+    encontrado = False
+    with open("suscripciones.csv", "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row["email"].lower() == email.lower():
+                if row["estado"] == "cancelado":
+                    row["estado"] = "activo"
+                    encontrado = True
+            filas.append(row)
+    if encontrado:
+        with open("suscripciones.csv", "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["email", "estado"])
+            writer.writeheader()
+            writer.writerows(filas)
+    return encontrado
+
+def iniciar_prueba(email):
+    filas = []
+    iniciado = False
+    with open("suscripciones.csv", "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            if row["email"].lower() == email.lower():
+                if row["estado"] == "cancelado":
+                    row["estado"] = "activo (prueba gratuita)"
+                    iniciado = True
+            filas.append(row)
+    if iniciado:
+        with open("suscripciones.csv", "w", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=["email", "estado"])
+            writer.writeheader()
+            writer.writerows(filas)
+    return iniciado
+
+def mostrar_beneficios():
+    beneficios = [
+        "✅ Envíos gratis en productos Prime",
+        "✅ Prime Video incluido",
+        "✅ Prime Music",
+        "✅ Prime Reading (libros y revistas)",
+        "✅ Ofertas exclusivas en Prime Day"
+    ]
+    print("\nTu suscripción Prime incluye:")
+    for b in beneficios:
+        print("-", b)
+
 # ---------------------------
 # Flujo chatbot
 # ---------------------------
@@ -149,22 +192,45 @@ while salida:
                     estado = buscar_suscripcion(email)
                     if estado is None:
                         print("No encontré ninguna suscripción con ese correo.")
-                    elif estado == "cancelado":
-                        print("Tu suscripción ya está cancelada.")
                     else:
-                        opcion = input("¿Quieres cancelar tu suscripción? (sí/no): ")
-                        if opcion.lower() in ["si", "sí", "yes", "y"]:
-                            if cancelar_suscripcion(email):
+                        print(f"Estado actual de tu suscripción: {estado}")
+                        print("\nOpciones disponibles:")
+                        print("1. Cancelar suscripción")
+                        print("2. Reactivar suscripción")
+                        print("3. Iniciar prueba gratuita")
+                        print("4. Ver beneficios")
+                        opcion = input("Elige una opción (1-4): ")
+
+                        if opcion == "1":
+                            if estado == "cancelado":
+                                print("Tu suscripción ya estaba cancelada.")
+                            elif cancelar_suscripcion(email):
                                 print("Tu suscripción ha sido cancelada exitosamente.")
                             else:
                                 print("Ocurrió un error al cancelar la suscripción.")
+                        
+                        elif opcion == "2":
+                            if reactivar_suscripcion(email):
+                                print("Tu suscripción ha sido reactivada con éxito.")
+                            else:
+                                print("No se pudo reactivar. Revisa si estaba cancelada.")
+                        
+                        elif opcion == "3":
+                            if iniciar_prueba(email):
+                                print("Prueba gratuita activada. Disfruta de Prime por 30 días.")
+                            else:
+                                print("No se pudo activar la prueba gratuita (quizá ya tienes una activa).")
+                        
+                        elif opcion == "4":
+                            mostrar_beneficios()
+                        
                         else:
-                            print("Tu suscripción sigue activa. ")
+                            print("Opción no válida.")
                 else:
                     print("El formato del correo no es válido.")
             
             if categoria_actual in respuestas:
-                print("\nTe sugiero:")
+                print("\nTe sugiero también:")
                 for respuesta in respuestas[categoria_actual]:
                     print(f"- {respuesta}")
                 
