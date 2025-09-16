@@ -48,40 +48,71 @@ nombre_regex = r'^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$'
 tarjeta_regex = r'^\d{16}$'
 direccion_regex = r'^[\w\s\#\-\.,áéíóúÁÉÍÓÚñÑ]+$'
 
-Gestion_Cuenta_RE = re.compile(r"""
-    (?ix)       
+cambiar_contrasena = re.compile(r"""
+    (?ix)
+    \b(?:
+        ((?:olvid[ée]|perd[ií]|recuperar|restablecer|resetear|cambiar)\s+(?:mi|la\s+)?(?:contraseñ[ao]|password|clave|pass|pwd))
+        (?:mi\s+)?(?:contraseñ[ao]|password|clave|pass|pwd)
+    )\b
+""", re.VERBOSE)
+ingresar_cuenta_RE = re.compile(r"""
+    (?ix)
     \b(?:
         # Problemas de acceso
-        (?P<acceso>(?:no\s+)?(?:pued[oe]|podr[ií]a)\s+(?:acceder|entrar|ingresar|iniciar|acceso|est[aá]|estar\s+))
-        # Contraseñas
-        |(?P<contrasena>(?:olvid[ée]|perd[ií]|recuperar|restablecer|resetear|cambiar)\s+)
-        # Verificación en dos pasos
-        |(?P<verificacion>(?:verificaci[óo]n|autenticaci[óo]n|2fa|doble\s+factor|c[óo]digo)\s+(?:dos\s+pasos|seguridad))
-        # Cuenta bloqueada
-        |(?P<bloqueo>
-            (?:mi|la)?\s*cuenta
-            (?:\s+(?:de|del|la|el|los|las|amazon|sistema|sitio|web|pagina|app|aplicacion|mi|tu|su|nuestro|nuestra|sus))*
-            \s+(?:est[aá]|se\s+encuentra|qued[óo]|fue|aparece)
-            \s+(?:bloquead[ao]s?|suspendid[ao]s?|inhabilitad[ao]s?)
-            |
-            aparece\s+(?:bloquead[ao]s?|suspendid[ao]s?|inhabilitad[ao]s?)\s+(?:mi|la)?\s*cuenta
-        )
-        # Dispositivos y sesiones
-        |(?P<sesion>(?:dispositivo|sesi[óo]n)\s+(?:(?:no\s+)?reconocido|conectad[ao]|activ[ao]|abierta))
-        # Alertas de seguridad
-        |(?P<alerta>(?:alert|notificaci[óo]n|alerta)\s+seguridad|seguridad\s+(?:alert|notificaci[óo]n|alerta))
-        # Configuración de seguridad
-        (?P<configuracion>(?:activ|desactiv|configur)\s+(?:seguridad|verificaci[óo]n|notificaci[óo]n))
-        # Cambio de datos de contacto
-        |(?P<contacto>(?:cambiar|actualizar|modificar)\s+(?:correo|email|tel[ée]fono|n[úu]mero|direcci[óo]n))
-        # Datos personales
-        |(?P<datos>(?:datos|informaci[óo]n)\s+personal|personal\s+(?:datos|informaci[óo]n))
-        # Eliminación de cuenta
-        |(?P<eliminar>(?:eliminar|cerrar|borrar)\s+cuenta|cuenta\s+(?:eliminar|cerrar|borrar))
-        # Problemas generales
-        |(?P<problema>(?:problema|error|dificultad|duda)\s+(?:sesi[óo]n|login|acceso|cuenta))
-        # Plataforma
-        |(?P<sistema>(?:sistema|amazon|p[aá]ina|sitio|web|aplicaci[óo]n|app|amazon)\s+)
+        (?:no\s+me\s+deja|no\s+funciona|no\s+reconoce|me\s+da\s+error|tengo\s+problemas\s+para|no\s+puedo|podr[ií]a)\s*?
+        (?:ingresar|entrar|acceder|login|log\s+in|sign\s+in|iniciar\s+sesi[oó]n|abrir\s+sesi[oó]n|loguear|loguearme)?
+        (?:\s+(?:a|en|mi|la|tu|su|nuestro|nuestra|sus))*?
+        (?:\s+(?:cuenta|account|perfil|profile|sistema|plataforma))?
+        (?:\s+(?:de|del|la|el|los|las))*?
+        (?:\s+(?:amazon|sitio|web|p[aá]gina|app|aplicaci[oó]n|plataforma))?
+        |(?:error|problema|fallo|incidente)\s+(?:al|al\s+intentar|al\s+tratar\s+de)\s+
+        |(?:usuario|correo|email|contraseña|password)\s+(?:no\s+funciona|no\s+sirve|incorrecto|no\s+reconoce)
+        |(?:nunca\s+puedo|no\s+puedo\s+iniciar\s+sesi[oó]n|siempre\s+me\s+pasa|vuelve\s+a\s+fallar)\s+
+    )\b
+""", re.VERBOSE)
+actualizar_datos_RE = re.compile(r"""
+    (?ix)
+    \b(?:
+        |(?:quiero|me\s+gustar[ií]a|necesito|debo|tengo\s+que|deseo|es\s+necesario|es\s+importante)
+        (?:actualizar|cambiar|modificar|editar|restablecer|restaurar|revisar|verificar)
+        (?:\s+(?:mi|la|tu|su|nuestro|nuestra|sus))*
+        \s+(?:informaci[óo]n|datos|data|details|detalles)
+        (?:\s+(?:de|del|la|el|los|las))*
+        \s+(?:cuenta|account|perfil|profile)
+        (de|del|la|el|los|las|amazon|sistema|sitio|web|pagina|app|aplicacion)*?
+    )\b
+""", re.VERBOSE)
+
+crear_cuenta_RE = re.compile(r"""
+    (?ix)
+    \b(?:
+        (?:quiero|me\s+gustar[ií]a|necesito|debo|tengo\s+que|deseo|es\s+necesario|es\s+importante)?
+        (?:crear|hacer|abrir|iniciar|registr(?:arme|arse)|nueva\s+)
+        (?:\s+(?:una|la))*
+        \s+(?:cuenta|account|perfil|profile)
+    )\b
+""", re.VERBOSE)
+
+problemas_verificacion_RE = re.compile(r"""
+    (?ix)
+    \b(?:
+        (?:tengo|hay|existe|me\s+da|me\s+aparece|no\s+puedo|no\s+recibo|no\s+llega|no\s+me\s+llega|no\s+me\s+han\s+enviado)?
+        (?:problema[s]|error[es]|dificultad[es]|duda[s])
+        (?:\s+(?:con|de|para))*
+        \s+(?:autenticaci[óo]n|verificaci[óo]n|2fa|doble\s+factor|c[óo]digo)
+    )\b
+""", re.VERBOSE)
+
+bloqueo_cuenta_RE = re.compile(r"""
+    (?ix)
+    \b(?:
+        (?:me|mi|la)?\s*cuenta
+        (?:\s+(?:de|del|la|el|los|las|amazon|sistema|sitio|web|pagina|app|aplicacion|mi|tu|su|nuestro|nuestra|sus))*
+        \s+(?:tengo|est[aá]|se\s+encuentra|qued[óo]|fue|aparece)
+        \s+(?:bloquead[ao]s?|suspendid[ao]s?|inhabilitad[ao]s?)
+        |aparece\s+(?:bloquead[ao]s?|suspendid[ao]s?|inhabilitad[ao]s?)\s+(?:mi|la)?\s*cuenta
+        |((esta\s+bloqueada|bloqueada|suspendida|inhabilitada)\s+(?:mi|la)?\s*cuenta)
+        |tengo\s+(?:mi|la)?\s*cuenta\s+(?:bloquead[ao]s?|suspendid[ao]s?|inhabilitad[ao]s?)
     )\b
 """, re.VERBOSE)
 
@@ -99,8 +130,8 @@ Soporte_Tecnico_RE = re.compile(r"""
         (?P<soporte>(?:dispositivo|kindle|fire tv|echo|alexa|fire tablet|fire stick|ring|blink|setup|configurar|conectar|wifi|bluetooth|actualización|firmware|software|hardware|pantalla|batería|carga|encender|apagar|reiniciar|resetear|restablecer fábrica|problema|error|fallo|no funciona|lento|congelado|térmico|sobrecalentamiento|garantía|reparación|reemplazo|troubleshooting|solución|guía|manual|instrucciones|compatibilidad|drivers|controladores))
     )\b
 """, re.VERBOSE)
-no_RE = re.compile(r'^(?:no|n|no,?\s+gracias)$', re.IGNORECASE)
-si_RE = re.compile(r'^(?:s[ií]|s|claro|por\s+supuesto)$', re.IGNORECASE)
+no_RE = re.compile(r'^(?:no|nada|cancelar|negativo|nel|nah||n|no,?\s+gracias)$', re.IGNORECASE)
+si_RE = re.compile(r'^(?:s[ií]|s|ok|perfecto|positivo|correcto|acepto|claro|por\s+supuesto|afirmativo|simon|smn)$', re.IGNORECASE)
 
 # ---------------------------
 # Clasificación de consulta
@@ -195,6 +226,53 @@ def manejar_bloqueo(match_obj):
             print("Bot: Por favor envía el formulario para iniciar el proceso de desbloqueo.")
     return True
 
+def manejar_verificacion(match_obj):
+    respuesta = hacer_pregunta("¿Recibiste el código en tu dispositivo o correo?")
+    if respuesta == "no":
+        print("Bot: Revisa tu carpeta de spam o actualiza tu número en configuración de seguridad.")
+    print("Bot: También puedes administrar la verificación aquí: https://www.amazon.com/a/settings/approval")
+    return True
+
+def manejar_datos(match_obj):
+    print("Bot: Para actualizar correo, teléfono o dirección:")
+    print("Bot: Ingresa a: https://www.amazon.com/a/central y selecciona 'Información de inicio de sesión y seguridad'.")
+    return True
+
+def manejar_crearCuenta(match_obj):
+    respuesta = hacer_pregunta(print("Bot: ¿Necesitas ayuda para crear una cuenta nueva en Amazon?"))
+    if si_RE.match(respuesta):
+        respuesta = hacer_pregunta("¿Te gustaría que te guíe en el proceso de creación de cuenta?")
+        if si_RE.match(respuesta):
+            # Pregunta de seguimiento para entender mejor la necesidad
+            print("Bot: Perfecto. ¿Estás teniendo algún problema en particular o solo necesitas el enlace?")
+            user_input = input("Usuario: ").strip().lower()
+            
+            if any(palabra in user_input for palabra in ["problema", "error", "dificultad", "no puedo"]):
+                print("Bot: Entiendo. ¿Podrías describirme qué error o mensaje te aparece?")
+                problema = input("Usuario: ").strip().lower()
+                # Manejar problemas específicos
+                if "correo" in problema or "email" in problema:
+                    print("Bot: Si el correo ya está registrado:")
+                    print("- Prueba con otra dirección de email")
+                    print("- O recupera la cuenta existente: https://www.amazon.com/-/es/ap/forgotpassword")
+                elif "contraseña" in problema:
+                    print("Bot: La contraseña debe tener al menos 8 caracteres, con letras mayúsculas, minúsculas y números.")
+                else:
+                    print("Bot: Te recomiendo:")
+                    print("1. Verificar tu conexión a internet")
+                    print("2. Usar un navegador actualizado")
+                    print("3. Aquí tienes el enlace: https://www.amazon.com/ap/register")
+            else:
+                # Solo el enlace
+                print("Bot: Aquí tienes el enlace para crear tu cuenta: https://www.amazon.com/ap/register")
+                print("Bot: El proceso es sencillo: email, contraseña y datos básicos. ¡Suerte!")
+                
+        else:
+            # Usuario no quiere ayuda
+            print("Bot: De acuerdo. Si cambias de opinión o necesitas ayuda más adelante, estaré aquí.")
+            print("Bot: También puedes visitar: https://www.amazon.com/ap/register cuando lo necesites.")
+    return True
+
 # ---------------------------
 # Maneajadores de gestión de cuenta
 # ---------------------------
@@ -202,13 +280,14 @@ manejadores_gestion = {
     'acceso': manejar_acceso,
     'contrasena': manejar_contrasena,
     'bloqueo': manejar_bloqueo,
-    # 'verificacion': manejar_verificacion
+    'verificacion': manejar_verificacion,
+    'datos': manejar_datos,
+    'crearCuenta': manejar_crearCuenta
 }
 
 state = 0
 salida = True
 categoria_actual = None
-match_objeto = None
 
 # ---------------------------
 # Flujo chatbot
@@ -218,27 +297,34 @@ print("Bot: ¡Hola! Soy tu asistente virtual de Amazon. ¿En qué te puedo ayuda
 while salida:
     try:
         if state == 0:
-            # time.sleep(1)
             user_input = input("Bot: Por favor, describe tu situación:\nUsuario: ")
+            empatia = random.choice(expresiones_empatia)
+            print(empatia.format(problema=user_input))
 
-            categoria_actual, match_objeto = clasificar_consulta(user_input)
-            if categoria_actual != Categoria.NO_RECONOCIDO:
-                print(expresiones_empatia[0].format(problema=user_input))
-
-                if categoria_actual == Categoria.GESTION_CUENTA and match_objeto:
-                    grupos = match_objeto.groupdict()
-                    # print(grupos)
-                    # Ejecutar manejadores específicos para cada grupo que coincidió
-                    for grupo_nombre, grupo_valor in grupos.items():
-                        # print(grupo_nombre, grupo_valor)
-                        if grupo_valor and grupo_nombre in manejadores_gestion:
-                            # print(grupo_nombre, grupo_valor)
-                            manejadores_gestion[grupo_nombre](match_objeto)
-                state = 1                
-            else:
+            if ingresar_cuenta_RE.findall(user_input) != []:
+                manejar_acceso("acceso")
+                state = 1
+            if cambiar_contrasena.findall(user_input) != []:
+                manejar_contrasena("contrasena")
+                state = 2
+            if actualizar_datos_RE.findall(user_input) != []:
+                manejar_datos("datos")  
+                state = 3
+            if bloqueo_cuenta_RE.findall(user_input) != []:
+                manejar_bloqueo("bloqueo") 
+                state = 4
+            if crear_cuenta_RE.findall(user_input) != []:
+                manejar_crearCuenta("crearCuenta")
+                state = 5
+            if problemas_verificacion_RE.findall(user_input) != []:
+                manejar_verificacion("verificacion")
+                state = 6
+            if actualizar_datos_RE.findall(user_input) != []:
+                state = 7
+            else: 
                 print("Bot: Lo siento, no he entendido tu consulta. ¿Podrías reformularla?")
                 
-        elif state == 1:
+        elif state == 99:
             time.sleep(1)
             print("Bot: ¿Puedo ayudarte con algo más?")
             user_input = input("Usuario: ").strip().lower()
